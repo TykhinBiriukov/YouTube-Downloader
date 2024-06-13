@@ -1,7 +1,8 @@
-from pytube import YouTube 
-from tkinter import *
+import os
 import tkinter
 import customtkinter
+from tkinter import *
+from pytube import YouTube
 
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
@@ -27,22 +28,30 @@ Grid.columnconfigure(app,5,weight=1)
 Grid.columnconfigure(app,6,weight=1)
 
 def State1Button():
-    button1state = customtkinter.CTkButton(master=app, width=720, height=240, corner_radius=15, font=("", 65), text="Download Video", command=lambda: State2Actions(button1state, button1state))
-    button1state.grid(row=3, pady = 100, padx = 120) 
+    mp3 = False
+    buttonMp4Download = customtkinter.CTkButton(master=app, width=720, height=200, corner_radius=15, font=("", 65), text="Download Video", command=lambda: State2Actions(buttonMp4Download, buttonMp3Download, mp3))
+    buttonMp4Download.grid(row=1, column = 3, pady = 30)
+    buttonMp3Download = customtkinter.CTkButton(master=app, width=720, height=200, corner_radius=15, font=("", 65), text="Download Audio", command=lambda: mp3Switch(buttonMp4Download, buttonMp3Download, mp3))
+    buttonMp3Download.grid(row=4, column = 3, pady = 30)
+    
 
+def mp3Switch(buttonMp4Download, buttonMp3Download, mp3):
+    mp3 = True
+    State2Actions(buttonMp4Download, buttonMp3Download, mp3)
+    return mp3
 
-def State2Actions(widget, widget1): 
+def State2Actions(widget, widget1, mp3): 
     widget.grid_forget()
     widget1.grid_forget() 
     
-    downloadFromInputButton = customtkinter.CTkButton(master=app, width=720, height=200, border_width=0, corner_radius=15, font=("", 40), text="Download From Manual Input", command=lambda: ManualLinksInput(downloadFromInputButton, downloadFromTxtButton))
+    downloadFromInputButton = customtkinter.CTkButton(master=app, width=720, height=200, border_width=0, corner_radius=15, font=("", 40), text="Download From Manual Input", command=lambda: ManualLinksInput(downloadFromInputButton, downloadFromTxtButton, mp3))
     downloadFromInputButton.grid(row=1, column = 3, pady = 30)
     
-    downloadFromTxtButton = customtkinter.CTkButton(master=app, width=720, height=200, border_width=0, corner_radius=15, font=("", 40), text="Read & Download From .txt File", command=lambda: TxtUrlInput(downloadFromInputButton, downloadFromTxtButton))
+    downloadFromTxtButton = customtkinter.CTkButton(master=app, width=720, height=200, border_width=0, corner_radius=15, font=("", 40), text="Read & Download From .txt File", command=lambda: TxtUrlInput(downloadFromInputButton, downloadFromTxtButton, mp3))
     downloadFromTxtButton.grid(row=4, column = 3, pady = 30)
 
     
-def ManualLinksInput(downloadFromInputButton, downloadFromTxtButton):
+def ManualLinksInput(downloadFromInputButton, downloadFromTxtButton, mp3):
     downloadFromInputButton.grid_forget()
     downloadFromTxtButton.grid_forget()
     
@@ -60,15 +69,15 @@ def ManualLinksInput(downloadFromInputButton, downloadFromTxtButton):
     passEntery = tkinter.Entry(master=app,textvariable = passInput, font=("",25), width=20)
     passEntery.grid(row=2, column=4, columnspan=2)
     
-    submitButton = customtkinter.CTkButton(app, height= 120, width= 350, border_width=0, corner_radius=15, font=("",40), text = "Submit", command=lambda: ManualInputDownloadComplete(labeToDownloadlLink, linkEntry, labeWhereToDownload, passEntery, submitButton, passInput, linkInput, errorMassage))  
+    submitButton = customtkinter.CTkButton(app, height= 120, width= 350, border_width=0, corner_radius=15, font=("",40), text = "Submit", command=lambda: ManualInputDownloadComplete(labeToDownloadlLink, linkEntry, labeWhereToDownload, passEntery, submitButton, passInput, linkInput, errorMassage, mp3))  
     submitButton.grid(row=3, rowspan=3, column=1, columnspan=5)
     
     errorMassage = customtkinter.CTkLabel(master=app, text="Please enter valid link and path", font=("", 25))
 
 
-def ManualInputDownloadComplete(labeToDownloadlLink, linkEntry, labeWhereToDownload, passEntery, submitButton, passInput, linkInput, errorMassage):
+def ManualInputDownloadComplete(labeToDownloadlLink, linkEntry, labeWhereToDownload, passEntery, submitButton, passInput, linkInput, errorMassage, mp3):
     try:
-        Downloding(passInput, linkInput)
+        Downloding(passInput, linkInput, mp3)
         
         labeToDownloadlLink.grid_forget()
         linkEntry.grid_forget()
@@ -77,10 +86,10 @@ def ManualInputDownloadComplete(labeToDownloadlLink, linkEntry, labeWhereToDownl
         submitButton.grid_forget()
         errorMassage.grid_forget()
 
-        dowloadFinishedlabel = customtkinter.CTkLabel(master=app, text="Video is succesfully downloaded!", font=("", 40))
+        dowloadFinishedlabel = customtkinter.CTkLabel(master=app, text="Download is succesfully completed!", font=("", 40))
         dowloadFinishedlabel.grid(row=2, column=1, columnspan=5)
         
-        askForAnotherDownload = customtkinter.CTkButton(master=app, height= 200, width= 700, border_width=0, corner_radius=15, font=("",40), text = "Download Another Video", command=lambda: State2Actions(dowloadFinishedlabel, askForAnotherDownload))
+        askForAnotherDownload = customtkinter.CTkButton(master=app, height= 200, width= 700, border_width=0, corner_radius=15, font=("",40), text = "Download Another Video/Audio", command=lambda: MainPage(dowloadFinishedlabel, askForAnotherDownload, mp3))
         askForAnotherDownload.grid(row=3, rowspan=3, column=1, columnspan=5)
 
     except:
@@ -89,17 +98,21 @@ def ManualInputDownloadComplete(labeToDownloadlLink, linkEntry, labeWhereToDownl
         errorMassage.grid(row=3, column=1, columnspan=5)
 
 
-def Downloding(passInput, linkInput):
-    videoUrl=linkInput.get()
-    pathToDownload=passInput.get()
-#https://www.youtube.com/watch?v=dQw4w9WgXcQ
-#D:\Programming\Projects\YouTube_Downloader\Download Test
+def Downloding(passInput, linkInput, mp3):
+    videoUrl = linkInput.get()
+    pathToDownload = passInput.get()
     youtube = YouTube(videoUrl)
-    video = youtube.streams.get_highest_resolution()
-    video.download(pathToDownload)
+    if (mp3 == False):
+        video = youtube.streams.get_highest_resolution()
+        video.download(pathToDownload)
+    else:
+        audioFile = youtube.streams.filter(only_audio=True).first().download(pathToDownload)
+        base, extra = os.path.splitext(audioFile)
+        newFile = base + '.mp3'
+        os.rename(audioFile, newFile)
+        
     
-    
-def TxtUrlInput(downloadFromInputButton, downloadFromTxtButton):
+def TxtUrlInput(downloadFromInputButton, downloadFromTxtButton, mp3):
     downloadFromInputButton.grid_forget()
     downloadFromTxtButton.grid_forget()
     
@@ -117,15 +130,15 @@ def TxtUrlInput(downloadFromInputButton, downloadFromTxtButton):
     passEntery = tkinter.Entry(master=app,textvariable = passInput, font=("",25), width=20)
     passEntery.grid(row=2, column=4, columnspan=2)
     
-    submitButton = customtkinter.CTkButton(app, height= 120, width= 350, border_width=0, corner_radius=15, font=("",40), text = "Submit", command=lambda: TxtInputDownloadComplete(labeToDownloadlTxt, txtLinkEntry, labeWhereToDownload, passEntery, submitButton, passInput, txtInput, errorMassage))  
+    submitButton = customtkinter.CTkButton(app, height= 120, width= 350, border_width=0, corner_radius=15, font=("",40), text = "Submit", command=lambda: TxtInputDownloadComplete(labeToDownloadlTxt, txtLinkEntry, labeWhereToDownload, passEntery, submitButton, passInput, txtInput, errorMassage, mp3))  
     submitButton.grid(row=3, rowspan=3, column=1, columnspan=5)
     
     errorMassage = customtkinter.CTkLabel(master=app, text="Please make sure that every link is written from new line and path is valid", font=("", 23))
 
 
-def TxtInputDownloadComplete(labeToDownloadlTxt, txtLinkEntry, labeWhereToDownload, passEntery, submitButton, passInput, txtInput, errorMassage):
+def TxtInputDownloadComplete(labeToDownloadlTxt, txtLinkEntry, labeWhereToDownload, passEntery, submitButton, passInput, txtInput, errorMassage, mp3):
     try:
-        DownlodingFromTxt(passInput, txtInput)
+        DownlodingFromTxt(passInput, txtInput, mp3)
         
         labeToDownloadlTxt.grid_forget()
         txtLinkEntry.grid_forget()
@@ -134,10 +147,10 @@ def TxtInputDownloadComplete(labeToDownloadlTxt, txtLinkEntry, labeWhereToDownlo
         submitButton.grid_forget()
         errorMassage.grid_forget()
 
-        dowloadFinishedlabel = customtkinter.CTkLabel(master=app, text="Video is succesfully downloaded!", font=("", 40))
+        dowloadFinishedlabel = customtkinter.CTkLabel(master=app, text="Download is succesfully completed!", font=("", 40))
         dowloadFinishedlabel.grid(row=2, column=1, columnspan=5)
         
-        askForAnotherDownload = customtkinter.CTkButton(master=app, height= 200, width= 700, border_width=0, corner_radius=15, font=("",40), text = "Download Another Video", command=lambda: State2Actions(dowloadFinishedlabel, askForAnotherDownload))
+        askForAnotherDownload = customtkinter.CTkButton(master=app, height= 200, width= 700, border_width=0, corner_radius=15, font=("",40), text = "Download Another Video/Audio", command=lambda: MainPage(dowloadFinishedlabel, askForAnotherDownload, mp3))
         askForAnotherDownload.grid(row=3, rowspan=3, column=1, columnspan=5)
 
     except:
@@ -146,15 +159,31 @@ def TxtInputDownloadComplete(labeToDownloadlTxt, txtLinkEntry, labeWhereToDownlo
         errorMassage.grid(row=3, column=0, columnspan=7)
 
 
-def DownlodingFromTxt(passInput, txtInput):
+def DownlodingFromTxt(passInput, txtInput, mp3):
     txtPass=txtInput.get()
     pathToDownload=passInput.get()
     
     txtFile = open(txtPass, "r")
     for i in txtFile:      
         youtube = YouTube(i)
-        video = youtube.streams.get_highest_resolution()
-        video.download(pathToDownload) 
+        if (mp3 == False):
+            video = youtube.streams.get_highest_resolution()
+            video.download(pathToDownload) 
+        else:            
+            audioFile = youtube.streams.filter(only_audio=True).first().download(pathToDownload)
+            base, extra = os.path.splitext(audioFile)
+            newFile = base + '.mp3'
+            os.rename(audioFile, newFile)
+
+
+def MainPage(widget, widget1, mp3): 
+    widget.grid_forget()
+    widget1.grid_forget()
+    mp3 = False
+    buttonMp4Download = customtkinter.CTkButton(master=app, width=720, height=200, corner_radius=15, font=("", 65), text="Download Video", command=lambda: State2Actions(buttonMp4Download, buttonMp3Download, mp3))
+    buttonMp4Download.grid(row=1, column = 3, pady = 30)
+    buttonMp3Download = customtkinter.CTkButton(master=app, width=720, height=200, corner_radius=15, font=("", 65), text="Download Audio", command=lambda: mp3Switch(buttonMp4Download, buttonMp3Download, mp3))
+    buttonMp3Download.grid(row=4, column = 3, pady = 30)
 
 
 State1Button()
